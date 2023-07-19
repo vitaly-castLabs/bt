@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    window.onload = function() {
+      document.getElementById('userAgent').textContent = navigator.userAgent;
+
+      let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
+      if (!hasEnoughAPIs) {
+        const supportsInsertableStreams = !!RTCRtpSender.prototype.createEncodedStreams;
+
+        let supportsTransferableStreams = false;
+        try {
+          const stream = new ReadableStream();
+          window.postMessage(stream, '*', [stream]);
+          supportsTransferableStreams = true;
+        } catch (e) {
+          console.error('Transferable streams are not supported.');
+        }
+        hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
+      }
+      document.getElementById('etSupport').textContent = hasEnoughAPIs ? 'Yes' : 'No';
+    }
+  </script>
+</head>
+<body>
+  <p>User Agent: <span id="userAgent"></span></p>
+  <p>Encoded Transform supported: <span id="etSupport"></span></p>
+</body>
+</html>
