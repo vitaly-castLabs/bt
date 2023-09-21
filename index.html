@@ -19,12 +19,14 @@
         }
         hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
       }
-      document.getElementById('etSupport').textContent = hasEnoughAPIs ? 'Yes' : 'No';
+      document.getElementById('etSupport').textContent = (hasEnoughAPIs ? 'Yes' : 'No') + ' (' + (!!window.RTCRtpScriptTransform ? 'RTCRtpScriptTransform' : 'InsertableStreams') + ')';
+      document.getElementById('mmsSupport').textContent = !window.ManagedMediaSource ? 'No' : 'Yes';
     }
   </script>
 </head>
 <body>
   <p>User Agent: <span id="userAgent"></span></p>
   <p>Encoded Transform supported: <span id="etSupport"></span></p>
+  <p>Managed Media Source supported: <span id="mmsSupport"></span></p>
 </body>
 </html>
