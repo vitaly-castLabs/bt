@@ -1,32 +1,61 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <script>
-    window.onload = function() {
-      document.getElementById('userAgent').textContent = navigator.userAgent;
+    <head>
+    <script>
+        async function maxHdcpVersion() {
+            let hdcpVersion = 'N/A';
+            const config = [{
+                videoCapabilities: [{
+                    contentType: 'video/mp4; codecs="avc1.640032"',
+                    robustness: 'SW_SECURE_DECODE'
+                }]
+            }];
 
-      let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
-      if (!hasEnoughAPIs) {
-        const supportsInsertableStreams = !!RTCRtpSender.prototype.createEncodedStreams;
+            const hdcpVersions = ['1.0', '1.1', '1.2', '1.3', '1.4', '2.0', '2.1', '2.2', '2.3'];
+            try {
+                const mksa = await navigator.requestMediaKeySystemAccess('com.widevine.alpha', config);
+                const mk = await mksa.createMediaKeys();
+                for (let i = 0; i < hdcpVersions.length; ++i) {
+                    const version = hdcpVersions[i];
+                    const status = await mk.getStatusForPolicy({minHdcpVersion: version});
+                    if (status === 'usable')
+                        hdcpVersion = version;
+                }
+            }
+            catch (e) {
+            }
 
-        let supportsTransferableStreams = false;
-        try {
-          const stream = new ReadableStream();
-          window.postMessage(stream, '*', [stream]);
-          supportsTransferableStreams = true;
-        } catch (e) {
-          console.error('Transferable streams are not supported.');
+            return hdcpVersion;
         }
-        hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
-      }
-      document.getElementById('etSupport').textContent = (hasEnoughAPIs ? 'Yes' : 'No') + ' (' + (!!window.RTCRtpScriptTransform ? 'RTCRtpScriptTransform' : 'InsertableStreams') + ')';
-      document.getElementById('mmsSupport').textContent = !window.ManagedMediaSource ? 'No' : 'Yes';
-    }
-  </script>
+
+        window.onload = async function() {
+            document.getElementById('userAgent').textContent = navigator.userAgent;
+
+            let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
+            if (!hasEnoughAPIs) {
+                const supportsInsertableStreams = !!RTCRtpSender.prototype.createEncodedStreams;
+
+                let supportsTransferableStreams = false;
+                try {
+                    const stream = new ReadableStream();
+                    window.postMessage(stream, '*', [stream]);
+                    supportsTransferableStreams = true;
+                }
+                catch (e) {
+                    console.error('Transferable streams are not supported.');
+                }
+                hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
+            }
+            document.getElementById('etSupport').textContent = (hasEnoughAPIs ? 'Yes' : 'No') + ' (' + (!!window.RTCRtpScriptTransform ? 'RTCRtpScriptTransform' : 'InsertableStreams') + ')';
+            document.getElementById('mmsSupport').textContent = !window.ManagedMediaSource ? 'No' : 'Yes';
+            document.getElementById('hdcpVersion').textContent = await maxHdcpVersion();
+        }
+    </script>
 </head>
 <body>
-  <p>User Agent: <span id="userAgent"></span></p>
-  <p>Encoded Transform supported: <span id="etSupport"></span></p>
-  <p>Managed Media Source supported: <span id="mmsSupport"></span></p>
+    <p>User Agent: <span id="userAgent"></span></p>
+    <p>Encoded Transform supported: <span id="etSupport"></span></p>
+    <p>Managed Media Source supported: <span id="mmsSupport"></span></p>
+    <p>HDCP version: <span id="hdcpVersion"></span></p>
 </body>
 </html>
