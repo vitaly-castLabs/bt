@@ -28,6 +28,52 @@
             return hdcpVersion;
         }
 
+        async function supportsFairPlayStreaming() {
+            let fpsAvailable = false;
+            try {
+                const a = await navigator.requestMediaKeySystemAccess('com.apple.fps', [{
+                    initDataTypes: ['sinf'],
+                    videoCapabilities: [{contentType: 'video/mp4', robustness: ''}],
+                    distinctiveIdentifier: 'not-allowed',
+                    persistentState: 'not-allowed',
+                    sessionTypes: ['temporary']
+                }]);
+
+                fpsAvailable = true;
+            }
+            catch(e) {}
+
+            return fpsAvailable;
+        }
+
+        async function supportsCenc(system, hw) {
+            let available = false;
+            let keySystem, robustness;
+            if (system === 'WV') {
+                keySystem = 'com.widevine.alpha';
+                robustness = hw ? 'HW_SECURE_ALL' : 'SW_SECURE_CRYPTO';
+            }
+            else if (system === 'PR') {
+                keySystem = 'com.microsoft.playready.recommendation';
+                robustness = hw ? '3000' : '2000';
+            }
+            else if (system === 'CK') {
+                keySystem = 'org.w3.clearkey';
+            }
+
+            try {
+                const a = await navigator.requestMediaKeySystemAccess(keySystem, [{
+                    initDataTypes: ['cenc'],
+                    videoCapabilities:[{contentType:'video/mp4; codecs="avc1.42E01E"', robustness}]
+                }]);
+
+                available = true;
+            }
+            catch(e) {}
+
+            return available;
+        }
+
         window.onload = async function() {
             document.getElementById('userAgent').textContent = navigator.userAgent;
 
@@ -49,6 +95,12 @@
             document.getElementById('etSupport').textContent = (hasEnoughAPIs ? 'Yes' : 'No') + ' (' + (!!window.RTCRtpScriptTransform ? 'RTCRtpScriptTransform' : 'InsertableStreams') + ')';
             document.getElementById('mmsSupport').textContent = !window.ManagedMediaSource ? 'No' : 'Yes';
             document.getElementById('hdcpVersion').textContent = await maxHdcpVersion();
+
+            document.getElementById('wvL3Support').textContent = (await supportsCenc('WV', false)) ? 'Yes' : 'No';
+            document.getElementById('wvL1Support').textContent = (await supportsCenc('WV', true)) ? 'Yes' : 'No';
+            document.getElementById('pr2000Support').textContent = (await supportsCenc('PR', false)) ? 'Yes' : 'No';
+            document.getElementById('pr3000Support').textContent = (await supportsCenc('PR', true)) ? 'Yes' : 'No';
+            document.getElementById('fpsSupport').textContent = (await supportsFairPlayStreaming()) ? 'Yes' : 'No';
         }
     </script>
 </head>
@@ -57,5 +109,12 @@
     <p>Encoded Transform supported: <span id="etSupport"></span></p>
     <p>Managed Media Source supported: <span id="mmsSupport"></span></p>
     <p>HDCP version: <span id="hdcpVersion"></span></p>
+    <p>
+        Widevine (L3): <span id="wvL3Support"></span><br>
+        Widevine (L1): <span id="wvL1Support"></span><br>
+        PlayReady (2000): <span id="pr2000Support"></span><br>
+        PlayReady (3000): <span id="pr3000Support"></span><br>
+        FairPlay Streaming: <span id="fpsSupport"></span><br>
+    </p>
 </body>
 </html>
