@@ -58,6 +58,8 @@
             let keySystem, robustness;
             if (system === 'WV') {
                 keySystem = 'com.widevine.alpha';
+                if (hw)
+                    keySystem += '.experiment';
                 robustness = hw ? 'HW_SECURE_ALL' : 'SW_SECURE_CRYPTO';
             }
             else if (system === 'PR') {
