@@ -101,7 +101,10 @@
                 }
                 hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
             }
-            document.getElementById('etSupport').textContent = (hasEnoughAPIs ? 'Yes' : 'No') + ' (' + (!!window.RTCRtpScriptTransform ? 'RTCRtpScriptTransform' : 'InsertableStreams') + ')';
+            let encTransSupport = hasEnoughAPIs ? 'Yes' : 'No';
+            if (hasEnoughAPIs)
+                encTransSupport += ' (' + (!!window.RTCRtpScriptTransform ? 'RTCRtpScriptTransform' : 'InsertableStreams') + ')';
+            document.getElementById('etSupport').textContent = encTransSupport;
             document.getElementById('mmsSupport').textContent = !window.ManagedMediaSource ? 'No' : 'Yes';
             document.getElementById('hdcpVersion').textContent = await maxHdcpVersion();
 
