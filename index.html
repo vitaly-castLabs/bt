@@ -84,7 +84,8 @@
         }
 
         window.onload = async function() {
-            document.getElementById('userAgent').textContent = navigator.userAgent;
+            document.getElementById('userAgent').textContent = navigator?.userAgent;
+            document.getElementById('platform').textContent = navigator?.platform;
 
             let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
             if (!hasEnoughAPIs) {
@@ -118,6 +119,7 @@
 </head>
 <body>
     <p>User Agent: <span id="userAgent"></span></p>
+    <p>Platform: <span id="platform"></span></p>
     <p>Encoded Transform supported: <span id="etSupport"></span></p>
     <p>Managed Media Source supported: <span id="mmsSupport"></span></p>
     <p>HDCP version: <span id="hdcpVersion"></span></p>
