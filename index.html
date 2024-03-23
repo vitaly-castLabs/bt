@@ -84,8 +84,8 @@
         }
 
         window.onload = async function() {
-            document.getElementById('userAgent').textContent = navigator?.userAgent;
-            document.getElementById('platform').textContent = navigator?.platform;
+            document.getElementById('userAgent').textContent = window?.navigator?.userAgent;
+            document.getElementById('platform').textContent = window?.navigator?.userAgentData?.platform || window?.navigator?.platform;
 
             let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
             if (!hasEnoughAPIs) {
