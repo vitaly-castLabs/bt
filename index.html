@@ -53,13 +53,26 @@
             return fpsAvailable;
         }
 
+        async function checkKsrPair(keySystem, robustness) {
+            let available = false;
+            try {
+                const a = await navigator.requestMediaKeySystemAccess(keySystem, [{
+                    initDataTypes: ['cenc'],
+                    videoCapabilities:[{contentType:'video/mp4; codecs="avc1.42E01E"', robustness}]
+                }]);
+
+                available = true;
+            }
+            catch(e) {}
+
+            return available;
+        }
+
         async function supportsCenc(system, hw) {
             let available = false;
             let keySystem, robustness;
             if (system === 'WV') {
                 keySystem = 'com.widevine.alpha';
-                if (hw)
-                    keySystem += '.experiment';
                 robustness = hw ? 'HW_SECURE_ALL' : 'SW_SECURE_CRYPTO';
             }
             else if (system === 'PR') {
@@ -70,15 +83,9 @@
                 keySystem = 'org.w3.clearkey';
             }
 
-            try {
-                const a = await navigator.requestMediaKeySystemAccess(keySystem, [{
-                    initDataTypes: ['cenc'],
-                    videoCapabilities:[{contentType:'video/mp4; codecs="avc1.42E01E"', robustness}]
-                }]);
-
-                available = true;
-            }
-            catch(e) {}
+            let available = await checkKsrPair(keySystem, robustness);
+            if (!available && system === 'WV' && hw)
+                available = await checkKsrPair(keySystem + '.experiment', robustness);
 
             return available;
         }
