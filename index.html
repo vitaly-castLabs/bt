@@ -96,24 +96,28 @@
             document.getElementById('userAgent').textContent = window?.navigator?.userAgent;
             document.getElementById('platform').textContent = window?.navigator?.userAgentData?.platform || window?.navigator?.platform;
 
-            let hasEnoughAPIs = !!window.RTCRtpScriptTransform;
-            if (!hasEnoughAPIs) {
-                const supportsInsertableStreams = !!RTCRtpSender.prototype.createEncodedStreams;
-
-                let supportsTransferableStreams = false;
+            let supportsInsertableStreams = false;
+            if (RTCRtpSender.prototype.createEncodedStreams) {
                 try {
                     const stream = new ReadableStream();
                     window.postMessage(stream, '*', [stream]);
-                    supportsTransferableStreams = true;
+                    supportsInsertableStreams = true;
                 }
-                catch (e) {
-                    console.error('Transferable streams are not supported.');
-                }
-                hasEnoughAPIs = supportsInsertableStreams && supportsTransferableStreams;
+                catch (e) {}
             }
-            let encTransSupport = hasEnoughAPIs ? 'Yes' : 'No';
-            if (hasEnoughAPIs)
-                encTransSupport += ' (' + (!!window.RTCRtpScriptTransform ? 'RTCRtpScriptTransform' : 'InsertableStreams') + ')';
+
+            const supportsRtcRtpScriptTransform = !!window.RTCRtpScriptTransform;
+
+            let encTransSupport = 'No';
+            if (supportsInsertableStreams || supportsRtcRtpScriptTransform) {
+                encTransSupport = 'Yes';
+                if (!supportsInsertableStreams)
+                    encTransSupport += ' (RTCRtpScriptTransform)';
+                else if (!supportsRtcRtpScriptTransform)
+                    encTransSupport += ' (InsertableStreams)';
+                else
+                    encTransSupport += ' (InsertableStreams and RTCRtpScriptTransform)';    // this is unlikely, but might be supported by Chrome in future
+            }
             document.getElementById('etSupport').textContent = encTransSupport;
             document.getElementById('mmsSupport').textContent = !window.ManagedMediaSource ? 'No' : 'Yes';
             document.getElementById('hdcpVersion').textContent = await maxHdcpVersion();
