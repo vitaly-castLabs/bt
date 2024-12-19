@@ -128,6 +128,11 @@
             document.getElementById('pr3000Support').textContent = (await supportsCenc('PR', true)) ? 'Yes' : 'No';
             document.getElementById('fpsSupport').textContent = (await supportsFairPlayStreaming()) ? 'Yes' : 'No';
         }
+
+        function testAV1() {
+            document.getElementById('testAv1Button').style.display = 'none'
+            document.getElementById('testAv1Video').style.display = 'block'
+        }
     </script>
 </head>
 <body>
@@ -142,6 +147,13 @@
         PlayReady (2000): <span id="pr2000Support"></span><br>
         PlayReady (3000): <span id="pr3000Support"></span><br>
         FairPlay Streaming: <span id="fpsSupport"></span><br>
+    </p>
+    <p>
+        <button id="testAv1Button" onclick="testAV1()">Test AV1</button>
+        <video id="testAv1Video" controls autoplay loop muted style="display:none">
+            <source src="./test-av1.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
     </p>
     <p><a href="https://googlechrome.github.io/samples/hdcp-detection/">HDCP tests</a></p>
     <p><a href="https://cconcolato.github.io/media-mime-support/">MIME support</a></p>
