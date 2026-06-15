@@ -9,6 +9,21 @@
         body {
             font-family: monospace;
         }
+
+        video {
+            display: block;
+            max-width: 100%;
+            width: 680px;
+        }
+
+        .test-video {
+            display: none;
+        }
+
+        .test-link {
+            cursor: pointer;
+            text-decoration: underline;
+        }
     </style>
 
     <script>
@@ -146,11 +161,10 @@
             document.getElementById('fpsSupport').textContent = (await fairPlayAvailable()) ? 'Yes' : 'No';
         }
 
-        async function testAV1() {
-            const video = document.getElementById('testAv1Video');
-            document.getElementById('testAv1Button').style.display = 'none';
+        async function testVideo(videoId, src) {
+            const video = document.getElementById(videoId);
             video.style.display = 'block';
-            video.src = './test-av1.mp4';
+            video.src = src;
             video.load();
             await video.play();
         }
@@ -169,12 +183,20 @@
         PlayReady (3000): <span id="pr3000Support"></span><br>
         FairPlay Streaming: <span id="fpsSupport"></span><br>
     </p>
-    <p>
-        <button id="testAv1Button" onclick="testAV1()">Test AV1</button>
-        <video id="testAv1Video" controls loop style="display:none">
-            Your browser does not support the video tag.
-        </video>
-    </p>
+    Test video codec support:<br>
+    <span class="test-link" onclick="testVideo('h264High8bit420Video', './stem2-h264-high-8bit-420.mp4')">H.264 High 8-bit 4:2:0</span>
+    <video id="h264High8bit420Video" class="test-video" controls></video><br>
+    <span class="test-link" onclick="testVideo('h264High42210bit422Video', './stem2-h264-high422-10bit-422.mp4')">H.264 High 4:2:2 10-bit</span>
+    <video id="h264High42210bit422Video" class="test-video" controls></video><br>
+    <span class="test-link" onclick="testVideo('av1Main8bit420Video', './stem2-av1-main-8bit-420.mp4')">AV1 Main 8-bit 4:2:0</span>
+    <video id="av1Main8bit420Video" class="test-video" controls></video><br>
+    <span class="test-link" onclick="testVideo('av1Main10bit420Video', './stem2-av1-main-10bit-420.mp4')">AV1 Main 10-bit 4:2:0</span>
+    <video id="av1Main10bit420Video" class="test-video" controls></video><br>
+    <span class="test-link" onclick="testVideo('av1Professional10bit422Video', './stem2-av1-professional-10bit-422.mp4')">AV1 Professional 10-bit 4:2:2</span>
+    <video id="av1Professional10bit422Video" class="test-video" controls></video><br>
+    <span class="test-link" onclick="testVideo('av1High10bit444Video', './stem2-av1-high-10bit-444.mp4')">AV1 High 10-bit 4:4:4</span>
+    <video id="av1High10bit444Video" class="test-video" controls></video><br>
+    <br>
     <p><a href="https://googlechrome.github.io/samples/hdcp-detection/">HDCP tests</a></p>
     <p><a href="https://cconcolato.github.io/media-mime-support/">MIME support</a></p>
     <p><a href="https://github.com/vitaly-castLabs/bt" target="_blank">GitHub</a></p>
