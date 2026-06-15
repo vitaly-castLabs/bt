@@ -56,12 +56,13 @@
             return fpsAvailable;
         }
 
-        async function checkKsrPair(keySystem, robustness) {
+        async function mediaKeySystemAvailable(keySystem, robustness, options = {}) {
             let available = false;
             try {
                 const a = await navigator.requestMediaKeySystemAccess(keySystem, [{
                     initDataTypes: ['cenc'],
-                    videoCapabilities:[{contentType:'video/mp4; codecs="avc1.42E01E"', robustness}]
+                    videoCapabilities:[{contentType:'video/mp4; codecs="avc1.42E01E"', robustness}],
+                    ...options
                 }]);
 
                 available = true;
@@ -85,11 +86,19 @@
                 keySystem = 'org.w3.clearkey';
             }
 
-            let available = await checkKsrPair(keySystem, robustness);
+            let available = await mediaKeySystemAvailable(keySystem, robustness);
             if (!available && system === 'WV' && hw)
-                available = await checkKsrPair(keySystem + '.experiment', robustness);
+                available = await mediaKeySystemAvailable(keySystem + '.experiment', robustness);
 
             return available;
+        }
+
+        async function supportsWidevinePersistentLicense(hw) {
+            const robustness = hw ? 'HW_SECURE_ALL' : 'SW_SECURE_CRYPTO';
+            return await mediaKeySystemAvailable('com.widevine.alpha', robustness, {
+                persistentState: 'required',
+                sessionTypes: ['persistent-license']
+            });
         }
 
         window.onload = async function() {
@@ -116,14 +125,22 @@
                 else if (!supportsRtcRtpScriptTransform)
                     encTransSupport += ' (InsertableStreams)';
                 else
-                    encTransSupport += ' (InsertableStreams and RTCRtpScriptTransform)';    // this is unlikely, but might be supported by Chrome in future
+                    encTransSupport += ' (InsertableStreams and RTCRtpScriptTransform)';    // Chrome supports both these days
             }
             document.getElementById('etSupport').textContent = encTransSupport;
             document.getElementById('mmsSupport').textContent = !window.ManagedMediaSource ? 'No' : 'Yes';
             document.getElementById('hdcpVersion').textContent = await maxHdcpVersion();
 
-            document.getElementById('wvL3Support').textContent = (await supportsCenc('WV', false)) ? 'Yes' : 'No';
-            document.getElementById('wvL1Support').textContent = (await supportsCenc('WV', true)) ? 'Yes' : 'No';
+            let wvL3Support = (await supportsCenc('WV', false)) ? 'Yes' : 'No';
+            if (wvL3Support === 'Yes')
+                wvL3Support += ` (Persistent: ${(await supportsWidevinePersistentLicense(false)) ? 'Yes' : 'No'})`;
+            document.getElementById('wvL3Support').textContent = wvL3Support;
+
+            let wvL1Support = (await supportsCenc('WV', true)) ? 'Yes' : 'No';
+            if (wvL1Support === 'Yes')
+                wvL1Support += ` (Persistent: ${(await supportsWidevinePersistentLicense(true)) ? 'Yes' : 'No'})`;
+            document.getElementById('wvL1Support').textContent = wvL1Support;
+
             document.getElementById('pr2000Support').textContent = (await supportsCenc('PR', false)) ? 'Yes' : 'No';
             document.getElementById('pr3000Support').textContent = (await supportsCenc('PR', true)) ? 'Yes' : 'No';
             document.getElementById('fpsSupport').textContent = (await supportsFairPlayStreaming()) ? 'Yes' : 'No';
