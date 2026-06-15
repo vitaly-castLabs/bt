@@ -38,7 +38,7 @@
             return hdcpVersion;
         }
 
-        async function supportsFairPlayStreaming() {
+        async function fairPlayAvailable() {
             let fpsAvailable = false;
             try {
                 const a = await navigator.requestMediaKeySystemAccess('com.apple.fps', [{
@@ -143,12 +143,16 @@
 
             document.getElementById('pr2000Support').textContent = (await supportsCenc('PR', false)) ? 'Yes' : 'No';
             document.getElementById('pr3000Support').textContent = (await supportsCenc('PR', true)) ? 'Yes' : 'No';
-            document.getElementById('fpsSupport').textContent = (await supportsFairPlayStreaming()) ? 'Yes' : 'No';
+            document.getElementById('fpsSupport').textContent = (await fairPlayAvailable()) ? 'Yes' : 'No';
         }
 
-        function testAV1() {
-            document.getElementById('testAv1Button').style.display = 'none'
-            document.getElementById('testAv1Video').style.display = 'block'
+        async function testAV1() {
+            const video = document.getElementById('testAv1Video');
+            document.getElementById('testAv1Button').style.display = 'none';
+            video.style.display = 'block';
+            video.src = './test-av1.mp4';
+            video.load();
+            await video.play();
         }
     </script>
 </head>
@@ -167,8 +171,7 @@
     </p>
     <p>
         <button id="testAv1Button" onclick="testAV1()">Test AV1</button>
-        <video id="testAv1Video" controls autoplay loop muted style="display:none">
-            <source src="./test-av1.mp4" type="video/mp4">
+        <video id="testAv1Video" controls loop style="display:none">
             Your browser does not support the video tag.
         </video>
     </p>
